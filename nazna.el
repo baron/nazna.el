@@ -122,7 +122,8 @@
     (cond
      ((string= i "q") (message "bye"))
      ((string= i "s") (nazna-skip question answer))
-     ((if (= (floor answer) (string-to-number i))
+     ;; answers are floored for division problems
+     ((if (= (floor answer) (floor (string-to-number i)))
           (nazna-correct)
         (progn
           (nazna-wrong question answer)
@@ -136,7 +137,7 @@
   (let  ((x (nazna-random-number))
          (y (nazna-random-number))
          (op (nazna-operator)))
-    (let ((ques (format "[%s] %s %s %s = " nazna-difficulty x op y))
+    (let ((ques (format "[level: %s] %s %s %s = " nazna-difficulty x op y))
           (ans (nazna-solution x y op)))
       (nazna-answer-problem ques ans))))
 
