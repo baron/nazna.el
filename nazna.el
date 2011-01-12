@@ -49,17 +49,22 @@
 (require 'cl)
 
 (defcustom nazna-operators '("*" "/" "+" "-")
-  "the operators for use in generating problems")
+  "the operators for use in generating problems"
+  :group 'nazna)
 
 (defcustom nazna-difficulty 1
-  "difficulty level of problems, corresponds to the number of maximum digits in random number generator")
+  "difficulty level of problems, corresponds to the number of maximum digits in random number generator"
+  :group 'nazna)
 
 (defcustom nazna-level-step 2
-  "this variable sets how fast the difficulty is incremented")
+  "this variable sets how fast the difficulty is incremented"
+  :group 'nazna)
 
 (defvar nazna-wrong-answers 0)
 
 (defvar nazna-correct-answers 0)
+
+(defvar nazna-sleep 0.5)
 
 (defun nazna-random-number ()
   "generates random number for problems"
@@ -84,10 +89,20 @@
     (setq nazna-correct-answers (1+ nazna-correct-answers))
     (message "good job")))
 
-(defun nazna-wrong ()
+(defun nazna-wrong (question answer)
   (progn
-    (setq nazna-wrong-answers (1- nazna-wrong-answers))
+    (setq nazna-wrong-answers (1+ nazna-wrong-answers))
     (message (format "wrong: %s %s" question answer))))
+
+(defun nazna-next-problem ()
+  (sleep-for nazna-sleep)
+  (nazna))
+
+(defun nazna-skip (question answer)
+  (progn
+    (setq nazna-sleep (1+ nazna-sleep))
+    (nazna-wrong question answer)
+    (nazna-next-problem)))
 
 (defun nazna-adjust ()
   (if (> nazna-wrong-answers nazna-level-step)
@@ -102,18 +117,17 @@
 
 (defun nazna-answer-problem (question answer)
   (interactive)
-  (let ((i (read-from-minibuffer question))
-        (sleepint 0.5))
+  (setq nazna-sleep 0.5)
+  (let ((i (read-from-minibuffer question)))
     (cond
      ((string= i "q") (message "bye"))
-     ((string= i "s") (nazna))
+     ((string= i "s") (nazna-skip question answer))
      ((if (= (floor answer) (string-to-number i))
           (nazna-correct)
         (progn
-          (nazna-wrong)
-          (setq sleepint (1+ sleepint))))
-      (sleep-for sleepint)
-      (nazna)))))
+          (nazna-wrong question answer)
+          (setq nazna-sleep (1+ nazna-sleep))))
+      (nazna-next-problem)))))
 
 (defun nazna ()
   "main function creates arithmetic problem"
@@ -122,7 +136,7 @@
   (let  ((x (nazna-random-number))
          (y (nazna-random-number))
          (op (nazna-operator)))
-    (let ((ques (format "%s %s %s = " x op y))
+    (let ((ques (format "[%s] %s %s %s = " nazna-difficulty x op y))
           (ans (nazna-solution x y op)))
       (nazna-answer-problem ques ans))))
 
