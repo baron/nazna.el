@@ -1,4 +1,4 @@
-;;; nazna.el ---
+;;; nazna.el --- mental arithmetic for emacs
 ;;
 ;; Filename: nazna.el
 ;; Description:
